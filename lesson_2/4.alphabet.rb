@@ -1,9 +1,7 @@
-count = 0
-vowels = {}
-for chr in ("a".."z")
-count += 1
-  if ['a','e','i','o','u'].include?(chr)
-  vowels[chr] = count
-  end
+vowels = %w( a e i o u )
+output = {}
+alphabet = ("a".."z").to_a
+alphabet.each_with_index do|char, index|
+  output[char] = index + 1 if vowels.include?(char)
 end
-p vowels
+p output

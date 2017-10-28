@@ -4,43 +4,41 @@ class Station
   attr_reader :name
   def initialize(name)
     @name = name
-    @trains = {}
+    @trains = []
   end
 
   def arrive(train)
-    @trains[train.number] = {train.type => train.wagon_quantity}
+    @trains << train
   end
 
   def show_all_trains
     p "All trains currently on station:"
-    trains.each {|number, value| p number}
+    trains.each {|train| p train.number}
   end
   def show_all_by_type
     passanger = 0
     cargo = 0
-    trains.each do |number, value| 
-    value.each {|type, wagons| type == "passenger" ? passanger += 1 : cargo += 1}
-    end
+    trains.each {|train| train.type == "passenger" ? passanger += 1 : cargo += 1}
     return "There is #{passanger} passenger trains and #{cargo} cargo trains on station right now."
   end
 
   def depart(train)
-    trains.delete(train.number)
+    trains.reject! {|index| index == train}
   end
 end
 
 class Route
-    attr_accessor :stations
+  attr_accessor :stations
   def initialize(first_st, last_st)
-    @stations = [] << first_st.name << last_st.name
+    @stations = [] << first_st << last_st
   end
   
   def add_station(station)
-    stations.insert(-2,station.name)
+    stations.insert(-2,station)
   end
   
-  def delete_station(station)
-    stations.reject!.with_index { |element,index| element == station.name && ![0,stations.size - 1].member?(index) }
+  def delete_station(station_name)
+    stations.reject!.with_index { |element,index| element.name == station_name && ![0,stations.size - 1].member?(index) }
   end
   
   def show_all_stations
@@ -53,7 +51,7 @@ class Train
   attr_reader :number
   attr_reader :type
   attr_accessor :wagon_quantity
-
+  attr_reader :route
 
   def initialize(number, type, wagon_quantity)
     @number = number
@@ -91,14 +89,37 @@ class Train
   end
 
   def get_route(route)
-    1route.stations[0] 
-    
+    route.stations.first.arrive(self)
+    @current_station = route.stations.first
+    @route = route
+  end
+  def movement(operator)
+    next_station_index = @route.stations.find_index(@current_station).send(operator,1)
+    @previous_station = @current_station
+    @current_station.depart(self)
+    @route.stations[next_station_index].arrive(self)
+    @current_station = @route.stations[next_station_index]
+  end
+  def move_to_next
+    movement(:+)
   end
 
-  def next_station
+  def move_back
+    movement(:-)
   end
-
-  def previous
+  
+  def show_previous_station
+    p @previous_station.name
   end
-
 end 
+
+train1 = Train.new(899,"cargo",10)
+train2 = Train.new(123,"passenger",10)
+train3 = Train.new(1001,"passenger",8)
+train4 = Train.new(588,"cargo",15)
+station1 = Station.new("Vilnus")
+station2 = Station.new("Minsk")
+station3 = Station.new("Moskva")
+station4 = Station.new("St.Pt")
+route = Route.new(station1, station2)
+train1.get_route(route)

@@ -2,6 +2,7 @@
 class Station
   attr_accessor :trains
   attr_reader :name
+  
   def initialize(name)
     @name = name
     @trains = []
@@ -12,18 +13,17 @@ class Station
   end
 
   def show_all_trains
-    p "All trains currently on station:"
     trains.each {|train| p train.number}
   end
-  def show_all_by_type
-    passanger = 0
-    cargo = 0
-    trains.each {|train| train.type == "passenger" ? passanger += 1 : cargo += 1}
-    return "There is #{passanger} passenger trains and #{cargo} cargo trains on station right now."
+  
+  def quantity_of_type(word_type)
+    quantity = 0
+    trains.each {|train| quantity += 1 if train.type == word_type}
+    return "There is #{quantity} #{word_type} trains on station right now."
   end
 
   def depart(train)
-    trains.reject! {|index| index == train}
+    trains.delete(train)
   end
 end
 
@@ -48,10 +48,8 @@ end
 
 
 class Train
-  attr_reader :number
-  attr_reader :type
+  attr_reader :number, :type, :route
   attr_accessor :wagon_quantity
-  attr_reader :route
 
   def initialize(number, type, wagon_quantity)
     @number = number
@@ -84,42 +82,56 @@ class Train
         when "disengage" then @wagon_quntity -= 1 
       end
     else 
-      p "You should stop the train first"
+      "You should stop the train first"
     end
   end
 
   def get_route(route)
     route.stations.first.arrive(self)
-    @current_station = route.stations.first
+    @current_station = 0
     @route = route
   end
-  def movement(operator)
-    next_station_index = @route.stations.find_index(@current_station).send(operator,1)
-    @previous_station = @current_station
-    @current_station.depart(self)
-    @route.stations[next_station_index].arrive(self)
-    @current_station = @route.stations[next_station_index]
-  end
+
   def move_to_next
-    movement(:+)
+    unless @current_station + 1 > @route.stations.size - 1
+    @previous_station = @current_station
+    @route.stations[@current_station].depart(self)
+    @current_station += 1
+    @route.stations[@current_station].arrive(self)
+    else
+      "You already on last station"
+    end
   end
 
   def move_back
-    movement(:-)
+    unless @current_station - 1 == -1
+    @previous_station = @current_station
+    @route.stations[@current_station].depart(self)
+    @current_station -= 1
+    @route.stations[@current_station].arrive(self)
+    else 
+      "You already on first station"
+    end
   end
   
   def show_previous_station
-    p @previous_station.name
+    unless @previous_station == nil
+      p @route.stations[@previous_station].name
+    else
+      "Just recived route, no previous stations yet!"
+    end
+  end
+  
+  def show_current_station
+    @route.stations[@current_station].name
+  end
+    
+  def show_next_station
+    if @current_station + 1 <= @route.stations.size - 1
+      @route.stations[@current_station].name
+    else
+      "This is last station"
+    end
   end
 end 
 
-train1 = Train.new(899,"cargo",10)
-train2 = Train.new(123,"passenger",10)
-train3 = Train.new(1001,"passenger",8)
-train4 = Train.new(588,"cargo",15)
-station1 = Station.new("Vilnus")
-station2 = Station.new("Minsk")
-station3 = Station.new("Moskva")
-station4 = Station.new("St.Pt")
-route = Route.new(station1, station2)
-train1.get_route(route)

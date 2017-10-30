@@ -78,31 +78,29 @@ class Train
 
   def move_to_next
     unless @current_station + 1 > @route.stations.size - 1
-    @previous_station = @current_station
-    current_station.depart(self)
-    @current_station += 1
-    current_station.arrive(self)
+      current_station.depart(self)
+      @current_station += 1
+      current_station.arrive(self)
     else
       "You already on last station"
     end
   end
 
   def move_back
-    unless @current_station - 1 == -1
-    @previous_station = @current_station
-    current_station.depart(self)
-    @current_station -= 1
-    current_station.arrive(self)
+    unless @current_station == 0
+      current_station.depart(self)
+      @current_station -= 1
+      current_station.arrive(self)
     else 
       "You already on first station"
     end
   end
   
   def show_previous_station
-    unless @previous_station == nil
-      p @route.stations[@previous_station]
+    unless @current_station == 0
+      @route.stations[@current_station - 1]
     else
-      "Just recived route, no previous stations yet!"
+      "Just recived route or you already on previous station!"
     end
   end
   
@@ -118,14 +116,3 @@ class Train
     end
   end
 end 
-
-train1 = Train.new(899,"cargo",10)		
-train2 = Train.new(123,"passenger",10)		
-train3 = Train.new(1001,"passenger",8)		
-train4 = Train.new(588,"cargo",15)		
-station1 = Station.new("Vilnus")		
-station2 = Station.new("Minsk")		
-station3 = Station.new("Moskva")		
-station4 = Station.new("St.Pt")		
-route = Route.new(station1, station2)		
-train1.get_route(route)

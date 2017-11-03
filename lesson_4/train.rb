@@ -7,6 +7,8 @@ class Train
     @speed = 0
   end
 
+  protected # beacause it not used under UI, but may be used by subclasses (someday) and to protect from train wreck =)
+
   def speed_up
     @speed += 10
   end
@@ -20,6 +22,8 @@ class Train
     p "Stopped"
   end
 
+  public #there is no show without this methods
+
   def engage_wagon(wagon)
     if @speed == 0
      wagon.type == self.type ? @wagons << wagon : "Wagon of different type"
@@ -28,11 +32,15 @@ class Train
     end
   end
 
-  def disengage_wagon
-    if @speed == 0 
-      @wagons[0] != nil ? @wagons.delete(@wagons[0]) : (p "Nothing to disengage")
+  def disengage_wagon(wagon)
+    if wagon.type == self.type
+      if @speed == 0 
+        @wagons[0] != nil ? @wagons.delete(@wagons[0]) : (p "Nothing to disengage")
+      else
+        p "You should stop the train first"
+      end
     else
-      p "You should stop the train first"
+      p "Wagon of different type"
     end
   end
 
@@ -69,7 +77,9 @@ class Train
       p "No route assigned to train"
     end
   end
-  
+
+  protected #used by subclasses, but not used by UI
+
   def show_previous_station
     unless @current_station == 0 || @route == nil
       @route.stations[@current_station - 1]

@@ -1,12 +1,14 @@
 class Station
 
   def self.all
-    ObjectSpace.each_object(self).to_a
+    @@instances
   end
 
   attr_reader :name, :trains
+  @@instances = []
   
   def initialize(name)
+    @@instances << self
     @name = name
     @trains = []
   end

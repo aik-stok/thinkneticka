@@ -18,6 +18,38 @@ class Base
     @wagons = []
   end
   
+    def run
+    loop do
+      print " 
+       Put number of paragraph:
+      1 Create stations
+      2 Create trains
+      3 Creatre route and manage stations
+      4 Assign route to train
+      5 Engage wagons
+      6 Disengage wagons
+      7 Move train to next station
+      8 Move train to previous station
+      9 Show stations and list of trains
+     "
+
+      answer = gets.chomp.to_i
+
+      case answer
+        when 1 then add_station
+        when 2 then add_train
+        when 3 then manage_routes
+        when 4 then assign_route
+        when 5 then engage_wagon
+        when 6 then disengage_wagon
+        when 7 then forward
+        when 8 then backward
+        when 9 then trains_on_station
+        when 10 then break
+      end
+  end
+end
+
   private # not used by any other class
   
   def show_trains
@@ -155,40 +187,6 @@ class Base
       p "Stations list is empty"
     end
   end
-
-  public
-
-  def run
-    loop do
-      print " 
-       Put number of paragraph:
-      1 Create stations
-      2 Create trains
-      3 Creatre route and manage stations
-      4 Assign route to train
-      5 Engage wagons
-      6 Disengage wagons
-      7 Move train to next station
-      8 Move train to previous station
-      9 Show stations and list of trains
-     "
-
-      answer = gets.chomp.to_i
-
-      case answer
-        when 1 then add_station
-        when 2 then add_train
-        when 3 then manage_routes
-        when 4 then assign_route
-        when 5 then engage_wagon
-        when 6 then disengage_wagon
-        when 7 then forward
-        when 8 then backward
-        when 9 then trains_on_station
-        when 10 then break
-      end
-  end
-end
 
 Base.new.run
 end

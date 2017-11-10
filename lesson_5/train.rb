@@ -2,17 +2,18 @@ class Train
 
   include Manufacturer
   attr_reader :number, :type, :route, :wagons
-  @@instances = []
+  @@instances = {}
 
   def initialize(number)
-    @@instances  << self
     @number = number
     @wagons = []
     @speed = 0
+    @@instances[self.number] = self
   end
   
   def self.find(num)
-    @@instances.find {|x|x.number == num}
+   result = @@instances.select {|key , value|key == num}.first
+   result.nil? ? nil : result
   end
 
   public #there is no show without this methods

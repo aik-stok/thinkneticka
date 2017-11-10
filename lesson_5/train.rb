@@ -12,8 +12,7 @@ class Train
   end
   
   def self.find(num)
-   result = @@instances.select {|key , value|key == num}.first
-   result.nil? ? nil : result
+   result = @@instances[num]
   end
 
   public #there is no show without this methods

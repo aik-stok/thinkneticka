@@ -1,9 +1,5 @@
 class Station
 
-  def self.all
-    @@instances
-  end
-
   attr_reader :name, :trains
   @@instances = []
   
@@ -11,6 +7,10 @@ class Station
     @@instances << self
     @name = name
     @trains = []
+  end
+  
+  def self.all
+    @@instances
   end
 
   def arrive(train)
@@ -27,5 +27,3 @@ class Station
     trains.count {|train| train.type == word_type}
   end
 end
-
-

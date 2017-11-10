@@ -1,31 +1,18 @@
 class Train
 
-  def self.find(num)
-    ObjectSpace.each_object(self).find {|x|x.number == num}
-  end
-
   include Manufacturer
   attr_reader :number, :type, :route, :wagons
+  @@instances = []
 
   def initialize(number)
+    @@instances  << self
     @number = number
     @wagons = []
     @speed = 0
   end
-
-  protected # beacause it not used under UI, but may be used by subclasses (someday) and to protect from train wreck =)
-
-  def speed_up
-    @speed += 10
-  end
-
-  def current_speed
-    p @speed
-  end
-
-  def stop
-    @speed = 0
-    p "Stopped"
+  
+  def self.find(num)
+    @@instances.find {|x|x.number == num}
   end
 
   public #there is no show without this methods
@@ -104,5 +91,20 @@ class Train
     else
       p "This is last station"
     end
+  end
+
+  protected # beacause it not used under UI, but may be used by subclasses (someday) and to protect from train wreck =)
+
+  def speed_up
+    @speed += 10
+  end
+
+  def current_speed
+    p @speed
+  end
+
+  def stop
+    @speed = 0
+    p "Stopped"
   end
 end 

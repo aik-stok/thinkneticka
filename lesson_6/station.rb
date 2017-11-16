@@ -4,10 +4,10 @@ class Station
   @@instances = []
   
   def initialize(name)
-    validate!
     @@instances << self
     @name = name
     @trains = []
+    validate!
   end
   
   def self.all

@@ -71,55 +71,61 @@ end
   end
   #интерфейс для создания поездов с механизмом обработки исключений
   def add_train
-    begin
     p "Type of train: 1 - pass, 2 - cargo"
       tr_type = gets.chomp.to_i
       p "Enter train number:"
       tr_number = gets.chomp.to_s
       tr_type == 1 ? train = PassengerTrain.new(tr_number) : train =  CargoTrain.new(tr_number)
+      @trains << train
+      p "Train created"
     rescue RuntimeError => e
       p e.message
       retry
-    end
-    @trains << train
-    p "Train created"
   end
   
   def manage_routes
     p "'add' - add new route, 'manage' - manage existing"
     answer = gets.chomp
     case answer
-      when "add"
-        unless @stations.empty?
-          p "Chose two stations from the list"
-          show_stations
-          p "Enter number of first station"
-          first_st = gets.chomp.to_i - 1
-          p "Enter number of first station"
-          last_st = gets.chomp.to_i - 1
-          @routes << Route.new(@stations[first_st], @stations[last_st])
-          p "Route created"
-        else
-          p "No stations to create route"
-        end
-      when "manage"
-        unless @routes.empty?
-          p "Chose route from the list of routes: "
-          show_routes
-          route_index = gets.chomp.to_i - 1
-          p "1 - add station, 2 - remove station"
-          answer = gets.chomp.to_i
-          show_stations
-          if answer == 1
-            p "Enter number of station to add" && answer = gets.chomp.to_i - 1
-              @routes[route_index].add_station(@stations[answer])
-          elsif answer == 2
-            p "Enter number of station to remove" && answer = gets.chomp.to_i - 1
-              @routes[route_index].delete_station(@stations[answer])
-          end
-        else
-          p "No existing routes"
-        end
+      when "add" then add_route
+        
+      when "manage" then manage_route
+        
+    end
+  end
+
+  def add_route
+    unless @stations.empty?
+      p "Chose two stations from the list"
+      show_stations
+      p "Enter number of first station"
+      first_st = gets.chomp.to_i - 1
+      p "Enter number of last station"
+      last_st = gets.chomp.to_i - 1
+      @routes << Route.new(@stations[first_st], @stations[last_st])
+      p "Route created"
+    else
+      p "No stations to create route"
+    end
+  end
+  
+  def manage_route
+    unless @routes.empty?
+      p "Chose route from the list of routes: "
+      show_routes
+      route_index = gets.chomp.to_i - 1
+      p "1 - add station, 2 - remove station"
+      answer = gets.chomp.to_i
+      show_stations
+      if answer == 1
+        p "Enter number of station to add" && answer = gets.chomp.to_i - 1
+          @routes[route_index].add_station(@stations[answer])
+      elsif answer == 2
+        p "Enter number of station to remove" && answer = gets.chomp.to_i - 1
+          @routes[route_index].delete_station(@stations[answer])
+      end
+    else
+      p "No existing routes"
     end
   end
   

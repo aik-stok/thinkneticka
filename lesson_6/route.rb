@@ -2,7 +2,7 @@ class Route
   attr_reader :stations
   def initialize(first_st, last_st)
     @stations = [first_st, last_st]
-    validate!(first_st, last_st)
+    validate!
   end
   
   def add_station(station)
@@ -21,10 +21,10 @@ class Route
   
   protected
 
-  def validate!(one, two)
-    raise "No first station received" if one.nil?
-    raise "No last station received" if two.nil?
-    raise "First and last are actually the same station" if one == two
+  def validate!
+    raise "No first station received" if @stations[0].nil?
+    raise "No last station received" if @stations[1].nil?
+    raise "First and last are actually the same station" if @stations[0] == @stations[1]
     true
   end
 

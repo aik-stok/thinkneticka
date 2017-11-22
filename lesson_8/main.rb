@@ -44,6 +44,7 @@ METHODS = {
       answer = gets.chomp.to_i
       menu(answer)
     end
+  end
 
   def menu(answer)
     METHODS[answer] || "Wrong input"
@@ -241,4 +242,3 @@ METHODS = {
 
 end
 Base.new.run
-end

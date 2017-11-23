@@ -27,7 +27,7 @@ class Station
 
   def valid?
     validate!
-  rescue
+  rescue RuntimeError
     false
   end
 

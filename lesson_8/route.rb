@@ -10,12 +10,13 @@ class Route
   end
 
   def delete_station(station)
-    stations.reject!.with_index { |element, index| element == station && ![0, stations.size - 1].member?(index) }
+    stations.reject!.with_index do |element, index| 
+    element == station && ![0, stations.size - 1].member?(index)
   end
 
   def valid?
     validate!
-  rescue
+  rescue RuntimeError
     false
   end
 
@@ -27,4 +28,5 @@ class Route
     raise 'First and last are actually the same station' if @stations[0] == @stations[1]
     true
   end
+
 end

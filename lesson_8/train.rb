@@ -13,11 +13,11 @@ class Train
   end
 
   def self.find(num)
-    result = @@instances[num.to_s]
+    @@instances[num.to_s]
   end
 
   def engage_wagon(wagon)
-    if @speed == 0
+    if @speed.zero?
       wagon.type == type ? @wagons << wagon : 'Wagon of different type'
     else
       p 'You should stop the train first'
@@ -25,7 +25,7 @@ class Train
   end
 
   def disengage_wagon(wagon)
-    if @speed == 0
+    if @speed.zero?
       !@wagons[0].nil? ? @wagons.delete(wagon) : (p 'Nothing to disengage')
     else
       'You should stop the train first'
@@ -51,35 +51,33 @@ class Train
         @current_station += 1
         current_station.arrive(self)
       end
-    else
-      p 'No route assigned to train'
+    else p 'No route assigned to train'
     end
   end
 
   def move_back
     if !@current_station.nil?
-      if @current_station == 0
+      if @current_station.zero?
         p 'You already on first station'
       else
         current_station.depart(self)
         @current_station -= 1
         current_station.arrive(self)
       end
-    else
-      p 'No route assigned to train'
+    else p 'No route assigned to train'
     end
   end
 
   def valid?
     validate!
-  rescue
+  rescue RuntimeError
     false
   end
 
   protected # used by subclasses, but not used by UI
 
   def show_previous_station
-    if @current_station == 0 || @route.nil?
+    if @current_station.zero? || @route.nil?
       p 'Not received route or you already on previous station!'
     else
       @route.stations[@current_station - 1]

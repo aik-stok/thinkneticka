@@ -8,25 +8,7 @@ require_relative 'wagon'
 require_relative 'cargo_wagon'
 require_relative 'passenger_wagon'
 
-class Base
-  attr_reader :stations
-
-  def initialize
-    @stations = []
-    @trains = []
-    @routes = []
-    @wagons = []
-  end
-  
-METHODS = {
-    1 => add_station, 2 => add_train, 3 => manage_routes, 4 => assign_route, 5 => engage_wagon, 6 => disengage_wagon,
-    7 => manage_wagon, 8 => forward, 9 => backward, 10 => trains_on_station, 11 => all_stations_and_trains
-    }
-
-  def run
-    
-    loop do
-      print "
+POST = "
        Put number of paragraph:
       1 Create stations
       2 Create trains
@@ -39,29 +21,54 @@ METHODS = {
       9 Move train to previous station
       10 Show stations and list of trains
       11 All trains and wagons on stations (yielded)
-     "
+     ".freeze
 
+class Base
+  attr_reader :stations
+
+  def initialize
+    @stations = []
+    @trains = []
+    @routes = []
+    @wagons = []
+  end
+
+  METHODS = {
+    1 => :add_station, 2 => :add_train, 3 => :manage_routes,
+    4 => :assign_route, 5 => :engage_wagon, 6 => :disengage_wagon,
+    7 => :manage_wagon, 8 => :forward, 9 => :backward,
+    10 => :trains_on_station, 11 => :all_stations_and_trains, 12 => :st
+  }.freeze
+
+  def st
+    p @trains[0]
+  end
+
+  def run
+    loop do
+      print POST
       answer = gets.chomp.to_i
+      next unless (1..12).cover?(answer)
       menu(answer)
     end
   end
 
   def menu(answer)
-    METHODS[answer] || "Wrong input"
+    send METHODS[answer]
   end
 
-  private 
+  private
 
   def show_trains
-    @trains.each_with_index { |train, index| p "#{index + 1}. #{train.number}" }
+    @trains.each_with_index { |train, ind| p "#{ind + 1}. #{train.number}" }
   end
 
   def show_routes
-    @routes.each_with_index { |route, index| p "#{index + 1}. #{route}" }
+    @routes.each_with_index { |route, ind| p "#{ind + 1}. #{route}" }
   end
 
   def show_stations
-    @stations.each_with_index { |station, index| p "#{index + 1}. #{station.name}" }
+    @stations.each_with_index { |station, ind| p "#{ind + 1}. #{station.name}" }
   end
 
   def add_station
@@ -70,14 +77,17 @@ METHODS = {
     @stations << Station.new(st_name)
   end
 
+  def create_train(num, type)
+    @trains << (type == 1 ? PassengerTrain.new(num) : CargoTrain.new(num))
+    p 'Train created'
+  end
+
   def add_train
     p 'Type of train: 1 - pass, 2 - cargo'
     tr_type = gets.chomp.to_i
     p 'Enter train number:'
-    tr_number = gets.chomp.to_s
-    tr_type == 1 ? train = PassengerTrain.new(tr_number) : train = CargoTrain.new(tr_number)
-    @trains << train
-    p 'Train created'
+    tr_number = gets.chomp
+    create_train(tr_number, tr_type)
   rescue RuntimeError => e
     p e.message
     retry
@@ -89,44 +99,70 @@ METHODS = {
     case answer
     when 'add' then add_route
 
-    when 'manage' then manage_route
+    when 'manage' then manage_one_route
 
     end
+  end
+
+  def create_route
+    p 'Enter number of first station'
+    first_st = gets.chomp.to_i - 1
+    p 'Enter number of last station'
+    last_st = gets.chomp.to_i - 1
+    @routes << Route.new(@stations[first_st], @stations[last_st])
   end
 
   def add_route
-    if @stations.empty?
-      p 'No stations to create route'
-    else
-      p 'Chose two stations from the list'
+    if !@stations.empty?
       show_stations
-      p 'Enter number of first station'
-      first_st = gets.chomp.to_i - 1
-      p 'Enter number of last station'
-      last_st = gets.chomp.to_i - 1
-      @routes << Route.new(@stations[first_st], @stations[last_st])
+      create_route
       p 'Route created'
+    else
+      p 'No stations to create route'
     end
   end
 
-  def manage_route
+  def add_to_route(route_index)
+    p 'Enter number of station to add'
+    show_stations
+    answer = gets.chomp.to_i - 1
+    @routes[route_index].add_station(@stations[answer])
+  end
+
+  def remove_from_route(route_index)
+    show_stations
+    p 'Enter number of station to remove'
+    answer = gets.chomp.to_i - 1
+    @routes[route_index].delete_station(@stations[answer])
+  end
+
+  def answering
+    route_index = gets.chomp.to_i - 1
+    p '1 -- add, 2 -- delete'
+    choice = gets.chomp.to_i
+    case choice
+    when 1 then add_to_route(route_index)
+    when 2 then remove_from_route(route_index)
+    end
+  end
+
+  def manage_one_route
     if @routes.empty?
       p 'No existing routes'
     else
-      p 'Chose route from the list of routes: '
       show_routes
-      route_index = gets.chomp.to_i - 1
-      p '1 - add station, 2 - remove station'
-      answer = gets.chomp.to_i
-      show_stations
-      if answer == 1
-        p 'Enter number of station to add' && answer = gets.chomp.to_i - 1
-        @routes[route_index].add_station(@stations[answer])
-      elsif answer == 2
-        p 'Enter number of station to remove' && answer = gets.chomp.to_i - 1
-        @routes[route_index].delete_station(@stations[answer])
-      end
+      p 'Choose route'
+      answering
     end
+  end
+
+  def assign_route_input
+    train_index = gets.chomp.to_i - 1
+    p 'Choose route number:'
+    show_routes
+    route_index = gets.chomp.to_i - 1
+    @trains[train_index].get_route(@routes[route_index])
+    p 'Route assigned'
   end
 
   def assign_route
@@ -135,13 +171,20 @@ METHODS = {
     else
       p 'Enter train index: '
       show_trains
-      train_index = gets.chomp.to_i - 1
-      p 'Choose route number:'
-      show_routes
-      route_index = gets.chomp.to_i - 1
-      @trains[train_index].get_route(@routes[route_index])
-      p 'Route assigned'
+      assign_route_input
     end
+  end
+
+  def create_cargo_wagon
+    p 'Enter capacity:'
+    quantity = gets.chomp.to_i
+    @trains[@train_number].engage_wagon(CargoWagon.new(quantity))
+  end
+
+  def create_passenger_wagon
+    p 'Enter number of seats:'
+    quantity = gets.chomp.to_i
+    @trains[@train_number].engage_wagon(PassengerWagon.new(quantity))
   end
 
   def engage_wagon
@@ -150,11 +193,21 @@ METHODS = {
     else
       show_trains
       p 'Choose train number'
-      train_number = gets.chomp.to_i - 1
-      type = @trains[train_number].type
-      type == 'cargo' ? (p 'Enter hold capacity: ') : (p 'Enter quantity of seats: ')
-      quantity = gets.chomp.to_i
-      type == 'cargo' ? @trains[train_number].engage_wagon(CargoWagon.new(quantity)) : @trains[train_number].engage_wagon(PassengerWagon.new(quantity))
+      @train_number = gets.chomp.to_i - 1
+      if @trains[@train_number].type == 'cargo' then create_cargo_wagon
+      else create_passenger_wagon
+      end
+    end
+  end
+
+  def choose_dsng_wgn
+    train_number = gets.chomp.to_i - 1
+    type = @trains[train_number].type
+    case type
+    when 'cargo'
+      @trains[train_number].disengage_wagon(CargoWagon.new)
+    when 'passenger'
+      @trains[train_number].disengage_wagon(PassengerWagon.new)
     end
   end
 
@@ -164,30 +217,42 @@ METHODS = {
     else
       show_trains
       p 'Choose train number'
-      train_number = gets.chomp.to_i - 1
-      type = @trains[train_number].type
-      type == 'cargo' ? @trains[train_number].disengage_wagon(CargoWagon.new) : @trains[train_number].disengage_wagon(PassengerWagon.new)
+      choose_dsng_wgn
+    end
+  end
+
+  def loadining_wagon
+    p 'Enter your volume'
+    volume = gets.chomp.to_i
+    @trains[@num_of_train].wagons[@num_of_wagon].loading(volume)
+    p 'Volume entered'
+  end
+
+  def take_seat
+    @trains[@num_of_train].wagons[@num_of_wagon].take_seat
+    p 'Seat was taken by passenger'
+  end
+
+  def choosing_train
+    p 'Choose train:'
+    show_trains
+    @num_of_train = gets.chomp.to_i - 1
+  end
+
+  def choosing_wagon
+    if @trains[@num_of_train].wagons.any?
+      p "Train has #{@trains[@num_of_train].wagons.count} wagon(s). Choose num:"
+      @num_of_wagon = gets.chomp.to_i - 1
+    else
+      p 'Train has no wagons'
     end
   end
 
   def manage_wagon
-    p 'Choose train:'
-    @trains.each_with_index { |train, index| p "#{index + 1}. #{train.number}" }
-    num_of_train = gets.chomp.to_i
-    if @trains[num_of_train - 1].wagons.any?
-      p "Train has #{@trains[num_of_train - 1].wagons.count} wagon(s). Choose number of managed wagon:"
-      num_of_wagon = gets.chomp.to_i - 1
-      if @trains[num_of_train - 1].wagons[num_of_wagon].type == 'cargo'
-        p 'Enter your volume'
-        volume = gets.chomp.to_i
-        @trains[num_of_train - 1].wagons[num_of_wagon].loading(volume)
-        p 'Volume entered'
-      else
-        @trains[num_of_train - 1].wagons[num_of_wagon].take_seat
-        p 'Seat was taken by passenger'
-      end
-    else
-      p 'Train has no wagons'
+    choosing_train
+    choosing_wagon
+    if @trains[@num_of_train].type == 'cargo' then loadining_wagon
+    else take_seat
     end
   end
 
@@ -219,8 +284,16 @@ METHODS = {
     else
       show_stations
       p 'Choose station number '
-      station_number = gets.chomp.to_i - 1
-      @stations[station_number].trains.each { |train| p "Number #{train.number}" }
+      station_num = gets.chomp.to_i - 1
+      @stations[station_num].trains.each { |train| p "Train #{train.number}" }
+    end
+  end
+
+  def show_wagon(wagon, train)
+    if wagon.type == 'passenger'
+      p "Nuber of wagon: #{train.wagons.index(wagon) + 1}, wagon type: #{wagon.type}, free seats: #{wagon.show_free_seats}, taken seats: #{wagon.taken}"
+    else
+      p "Nuber of wagon: #{train.wagons.index(wagon) + 1}, wagon type: #{wagon.type}, free volume: #{wagon.show_volume_left}, taken volume: #{wagon.show_taken_volume}"
     end
   end
 
@@ -228,17 +301,12 @@ METHODS = {
     @stations.each do |station|
       p "Station name: #{station.name}"
       station.each_train do |train|
-        p "Number: #{train.number}, type: #{train.type}, wagons quantity: #{train.wagons.count}"
+        p "Number: #{train.number}, type: #{train.type}, wagons: #{train.wagons.count}"
         train.each_wagon do |wagon|
-          if wagon.type == 'passenger'
-            p "Nuber of wagon: #{train.wagons.index(wagon) + 1}, wagon type: #{wagon.type}, free seats: #{wagon.show_free_seats}, taken seats: #{wagon.taken_seats}"
-          else
-            p "Nuber of wagon: #{train.wagons.index(wagon) + 1}, wagon type: #{wagon.type}, free volume: #{wagon.show_volume_left}, taken volume: #{wagon.show_taken_volume}"
-          end
+          show_wagon(wagon, train)
         end
       end
     end
   end
-
 end
 Base.new.run

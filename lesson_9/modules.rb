@@ -1,18 +1,15 @@
 module Acessors
-  def setter_end_history(name, var_name)
-    define_method("#{name}=".to_sym) do |value|
-      instance_variable_set(var_name, value)
-      @history ||= {}
-      @history["@#{name}"].nil? ? @history["@#{name}"] = [value] : @history["@#{name}"] << value
-    end
-  end
 
   def attr_accessor_with_history(*names)
     names.each do |name|
-      var_name = "@#{name}".to_sym
+      var_name, var_name_history = "@#{name}".to_sym, "@#{name}_history".to_sym
       define_method(name) { instance_variable_get(var_name) }
-      setter_end_history(name, var_name)
-      define_method("#{name}_history") { instance_variable_get(:@history)["@#{name}"] }
+      define_method("#{name}_history") { instance_variable_get(var_name_history) }
+      define_method("#{name}=".to_sym) do |value|
+        instance_variable_set(var_name, value)
+        instance_variable_set(var_name_history, []) unless !!instance_variable_get(var_name_history)
+        instance_variable_get(var_name_history) << value
+      end
     end
   end
 
@@ -37,42 +34,42 @@ module Validation
     attr_reader :validations
 
     def validate(name, validation_type, other = nil)
-      @validations ||= []
-      @validations << [name, validation_type, other]
+      @validations ||= {}
+      @validations[validation_type] = {name => other}
     end
   end
 
   module InstanceMethods
-    def presence?(name)
-      raise 'Empty' if instance_variable_get(name).nil? || name.to_s.empty?
-      true
-    end
-
-    def format?(name, pattern)
-      raise 'Wrong format' if instance_variable_get(name) !~ pattern
-      true
-    end
-
-    def type?(name, other)
-      instance_variable_get(name).is_a?(other) ? true : (raise 'Wrong type of object')
-    end
 
     def validate!
-      self.class.validations.each do |arr|
-        case arr[1]
-        when :presence then presence?("@#{arr[0]}")
-        when :format then format?("@#{arr[0]}", arr[2])
-        when :type then type?("@#{arr[0]}", arr[2])
+      self.class.validations.each do |validation_type, hash|
+        hash.each do |attr_name, params|
+          inst_var = instance_variable_get("@#{attr_name}")
+          send validation_type , inst_var, params
         end
       end
-      true
     end
 
     def valid?
       validate!
+      true
     rescue => e
-      e.message
+      p e.message
       false
+    end
+
+    private
+
+    def presence(inst_var, *)
+      raise 'Empty' if inst_var.nil? || inst_var.to_s.empty?
+    end
+
+    def format(inst_var, pattern)
+      raise 'Wrong format' if inst_var !~ pattern
+    end
+
+    def type_of(inst_var, pattern)
+      (raise 'Wrong type of object') if inst_var.is_a?(pattern) != true
     end
 
   end

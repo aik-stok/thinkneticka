@@ -8,6 +8,7 @@ require_relative 'wagon'
 require_relative 'cargo_wagon'
 require_relative 'passenger_wagon'
 
+
 POST = "
        Put number of paragraph:
       1 Create stations
@@ -94,9 +95,7 @@ class Base
     p 'Enter train number:'
     tr_number = gets.chomp
     create_train(tr_number, tr_type)
-  rescue => e
-    p e.message
-    retry
+
   end
 
   def manage_routes

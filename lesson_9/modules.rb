@@ -43,8 +43,10 @@ module Validation
 
     def validate!
       self.class.validations.each do |validation_type, hash|
-          inst_var = instance_variable_get("@#{hash.keys.first}")
-          send validation_type , inst_var, hash[hash.keys.first]
+        hash.each do |attr_name, param|
+          inst_var = instance_variable_get("@#{attr_name}")
+          send validation_type , inst_var, param
+        end
       end
     end
 

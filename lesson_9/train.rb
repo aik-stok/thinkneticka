@@ -13,7 +13,6 @@ class Train
     @number = number
     @wagons = []
     @speed = 0
-    valid?
     @@instances[self.number] = self
   end
 

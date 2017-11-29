@@ -43,10 +43,8 @@ module Validation
 
     def validate!
       self.class.validations.each do |validation_type, hash|
-        hash.each do |attr_name, params|
-          inst_var = instance_variable_get("@#{attr_name}")
-          send validation_type , inst_var, params
-        end
+          inst_var = instance_variable_get("@#{hash.keys.first}")
+          send validation_type , inst_var, hash[hash.keys.first]
       end
     end
 
@@ -69,7 +67,7 @@ module Validation
     end
 
     def type_of(inst_var, pattern)
-      (raise 'Wrong type of object') if inst_var.is_a?(pattern) != true
+      (raise 'Wrong type of object') unless inst_var.is_a?(pattern)
     end
 
   end

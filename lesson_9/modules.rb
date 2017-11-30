@@ -34,19 +34,18 @@ module Validation
     attr_reader :validations
 
     def validate(name, validation_type, other = nil)
-      @validations ||= {}
-      @validations[validation_type] = {name => other}
+      @validations ||= []
+      @validations << { attr_name: name, validation_type: validation_type, params: other }
+      p @validations
     end
   end
 
   module InstanceMethods
 
     def validate!
-      self.class.validations.each do |validation_type, hash|
-        hash.each do |attr_name, param|
-          inst_var = instance_variable_get("@#{attr_name}")
-          send validation_type , inst_var, param
-        end
+      self.class.validations.each do |hash|
+          inst_var = instance_variable_get("@#{hash[:attr_name]}".to_sym)
+          send hash[:validation_type] , inst_var, hash[:params]
       end
     end
 
